@@ -228,6 +228,14 @@ body{
 .cost{font-size:12.5px;color:var(--ink-soft);margin:8px 0 0;font-style:italic}
 ul.checks{list-style:none;margin:10px 0 0;padding:0}
 ul.checks li{margin:0 0 2px}
+/* swipe-to-delete */
+ul.checks li{position:relative;overflow:hidden;border-radius:13px;touch-action:pan-y}
+ul.checks li .swipe-bg{
+  position:absolute;inset:0;z-index:0;display:flex;align-items:center;justify-content:flex-end;
+  padding-right:16px;font-size:18px;background:#E85D6E;border-radius:13px;
+  opacity:0;pointer-events:none;
+}
+ul.checks li label{position:relative;z-index:1;background:var(--card)}
 ul.checks label{display:flex;gap:10px;align-items:flex-start;padding:7px 9px;border-radius:13px;font-size:13.5px;font-weight:500;cursor:pointer;transition:background .2s ease}
 ul.checks label:active{background:var(--blush)}
 ul.checks input{
@@ -578,10 +586,11 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 let state = loadState();
 function loadState(){
   try{ const raw = localStorage.getItem(STORE_KEY); if(raw) return JSON.parse(raw); }catch(e){}
-  return {done:{}, checks:{}, custom:{}, mode:"guide", introSeen:false};
+  return {done:{}, checks:{}, custom:{}, removed:{}, mode:"guide", introSeen:false};
 }
 function saveState(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }catch(e){} }
 state.custom = state.custom || {};   // migrate older saved state
+state.removed = state.removed || {}; // subtasks swiped away
 
 /* ============================================================
    3. FLOATING HEARTS BACKGROUND
@@ -709,9 +718,11 @@ function allItems(stop){ return stop.todo.concat(state.custom[stop.id] || []); }
 
 function checksHTML(stop){
   const checks = state.checks[stop.id] || [];
+  const removed = state.removed[stop.id] || [];
   return allItems(stop).map((t, n) => {
     const isCustom = n >= stop.todo.length;
-    return `<li class="${isCustom ? "custom" : ""}"><label>
+    if(!isCustom && removed.includes(n)) return "";
+    return `<li class="${isCustom ? "custom" : ""}"><span class="swipe-bg" aria-hidden="true">🗑️</span><label>
       <input type="checkbox" data-stop="${stop.id}" data-i="${n}" ${checks[n] ? "checked" : ""}>
       <span>${isCustom ? esc(t) : t}</span>
       ${isCustom ? `<button class="rm" data-rm="${stop.id}" data-i="${n}" aria-label="Remove">×</button>` : ""}
@@ -849,6 +860,80 @@ document.querySelector("main").addEventListener("click", e => {
   }
 });
 
+/* ---- swipe left on a subtask to delete it ---- */
+let swipe = null;
+const swipeRoot = document.querySelector("main");
+// swallow the synthetic click that can follow a released drag
+swipeRoot.addEventListener("click", e => {
+  const lbl = e.target.closest("ul.checks label");
+  if(lbl && lbl.dataset.swipedAt && Date.now() - (+lbl.dataset.swipedAt) < 400){
+    delete lbl.dataset.swipedAt;
+    e.preventDefault();
+    e.stopPropagation();
+  }
+}, true);
+swipeRoot.addEventListener("touchstart", e => {
+  const li = e.target.closest("ul.checks li");
+  if(!li || e.touches.length !== 1){ swipe = null; return; }
+  const t = e.touches[0];
+  swipe = {li, label: li.querySelector("label"), bg: li.querySelector(".swipe-bg"),
+           x0: t.clientX, y0: t.clientY, dx: 0, id: t.identifier, live: false};
+}, {passive: true});
+swipeRoot.addEventListener("touchmove", e => {
+  if(!swipe) return;
+  const t = [...e.touches].find(t => t.identifier === swipe.id);
+  if(!t) return;
+  const dx = t.clientX - swipe.x0, dy = t.clientY - swipe.y0;
+  if(!swipe.live){
+    if(Math.abs(dy) > 12 && Math.abs(dy) > Math.abs(dx)){ swipe = null; return; } // vertical scroll
+    if(!(dx < -8 && Math.abs(dx) > Math.abs(dy))) return;
+    swipe.live = true;
+    swipe.label.style.transition = "none";
+  }
+  const clamped = Math.max(dx, -swipe.li.offsetWidth * 0.85);
+  swipe.dx = clamped;
+  swipe.label.style.transform = `translateX(${clamped}px)`;
+  swipe.bg.style.opacity = Math.min(1, -clamped / 70);
+}, {passive: true});
+function swipeEnd(commit){
+  if(!swipe) return;
+  const s = swipe; swipe = null;
+  if(!s.live) return;
+  const li = s.li, label = s.label, w = li.offsetWidth;
+  const input = label.querySelector("input[type=checkbox]");
+  const id = input.dataset.stop, n = +input.dataset.i;
+  const stop = STOPS.find(x => x.id === id);
+  const isCustom = n >= stop.todo.length;
+  if(commit && s.dx < -Math.min(90, w * 0.28)){
+    // fling it off to the left, then collapse and remove
+    label.style.transition = "transform .26s ease-in, opacity .26s ease-in";
+    label.style.transform = `translateX(${-w}px)`;
+    label.style.opacity = "0";
+    setTimeout(() => {
+      li.style.height = li.offsetHeight + "px";
+      li.style.overflow = "hidden";
+      li.style.transition = "height .22s ease, opacity .18s ease";
+      requestAnimationFrame(() => {
+        li.style.height = "0px";
+        li.style.opacity = "0";
+        li.style.marginTop = "0";
+        li.style.marginBottom = "0";
+      });
+      setTimeout(() => { isCustom ? removeCustom(id, n) : removeBuiltIn(id, n); }, 240);
+    }, 280);
+  } else {
+    // spring back (and ignore the tap that released the drag)
+    label.style.transition = "transform .32s cubic-bezier(.2,.9,.25,1.18)";
+    label.style.transform = "";
+    label.style.opacity = "";
+    s.bg.style.opacity = "0";
+    label.dataset.swipedAt = Date.now();
+    setTimeout(() => { label.style.transition = ""; }, 340);
+  }
+}
+swipeRoot.addEventListener("touchend", () => swipeEnd(true));
+swipeRoot.addEventListener("touchcancel", () => swipeEnd(false));
+
 function scrollToNext(fromId){
   const idx = STOPS.findIndex(s => s.id === fromId);
   const next = STOPS.slice(idx + 1).find(s => !state.done[s.id]) || STOPS.slice(idx + 1)[0];
@@ -902,6 +987,18 @@ function removeCustom(id, n){
   if(state.checks[id]) state.checks[id].splice(n, 1);
   saveState();
   // rebuild the lists so the indices stay correct
+  document.querySelectorAll(`#stop-${id} .checks`).forEach(ul => {
+    ul.innerHTML = checksHTML(stop);
+  });
+  syncDoneWithChecks(id);
+  drawTrailSoon(300);
+}
+
+function removeBuiltIn(id, n){
+  state.removed[id] = state.removed[id] || [];
+  if(!state.removed[id].includes(n)) state.removed[id].push(n);
+  saveState();
+  const stop = STOPS.find(s => s.id === id);
   document.querySelectorAll(`#stop-${id} .checks`).forEach(ul => {
     ul.innerHTML = checksHTML(stop);
   });
@@ -995,9 +1092,11 @@ function celebrate(){
 
 document.getElementById("reset").addEventListener("click", () => {
   if(!confirm("Clear all checkmarks and start the day fresh?")) return;
-  state.done = {}; state.checks = {}; saveState();
+  state.done = {}; state.checks = {}; state.removed = {}; saveState();
   document.querySelectorAll(".stop").forEach(c => c.classList.remove("done"));
-  document.querySelectorAll(".checks input").forEach(b => b.checked = false);
+  STOPS.forEach(s => document.querySelectorAll(`#stop-${s.id} .checks`).forEach(ul => {
+    ul.innerHTML = checksHTML(s);   // restores any swiped-away subtasks, all unchecked
+  }));
   refreshHeader();
   window.scrollTo({top:0, behavior:"smooth"});
 });
