@@ -624,8 +624,8 @@ state.custom = state.custom || {};   // migrate older saved state
   });
   intro.addEventListener("click", dismiss);
 
-  if(reduce || state.introSeen){
-    // encore: a quick "welcome back" instead of the full show
+  if(reduce){
+    // reduced motion: a quick "welcome back" instead of the full show
     document.getElementById("introInner").innerHTML =
       `<div class="intro-kicker">💕</div>
        <div class="intro-name" style="font-size:clamp(40px,11vw,56px);animation-duration:.6s">Welcome back!</div>
