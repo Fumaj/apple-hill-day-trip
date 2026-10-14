@@ -761,6 +761,8 @@ function stopCardHTML(stop, i){
 
 const timeline = document.getElementById("timeline");
 STOPS.forEach((s, i) => timeline.insertAdjacentHTML("beforeend", stopCardHTML(s, i)));
+// stops restored with every box checked start minimized
+STOPS.forEach(s => syncDoneWithChecks(s.id, true));
 
 /* scroll-reveal orchestration */
 const revealObs = new IntersectionObserver(entries => {
@@ -780,6 +782,22 @@ document.querySelectorAll(".reveal").forEach(el => revealObs.observe(el));
 /* ============================================================
    9. SHARED INTERACTIONS (both views)
    ============================================================ */
+/* auto-minimize: a stop with every checkbox checked counts as done */
+function allDone(){ return STOPS.every(s => state.done[s.id]); }
+function allBoxesChecked(id){
+  const boxes = document.querySelectorAll(`#stop-${id} .checks input[type=checkbox]`);
+  return boxes.length > 0 && [...boxes].every(b => b.checked);
+}
+function syncDoneWithChecks(id, silent){
+  const card = document.getElementById("stop-" + id);
+  if(!card || state.done[id] || !allBoxesChecked(id)) return;
+  state.done[id] = true; saveState();
+  card.classList.add("done");
+  if(silent) return;
+  burst(card);
+  refreshHeader(); drawTrailSoon();
+  if(allDone()) celebrate();
+}
 document.querySelector("main").addEventListener("change", e => {
   const box = e.target.closest("input[type=checkbox]");
   if(!box) return;
@@ -787,6 +805,7 @@ document.querySelector("main").addEventListener("change", e => {
   state.checks[id] = state.checks[id] || [];
   state.checks[id][+box.dataset.i] = box.checked;
   saveState();
+  syncDoneWithChecks(id);
 });
 
 document.querySelector("main").addEventListener("click", e => {
@@ -886,6 +905,7 @@ function removeCustom(id, n){
   document.querySelectorAll(`#stop-${id} .checks`).forEach(ul => {
     ul.innerHTML = checksHTML(stop);
   });
+  syncDoneWithChecks(id);
   drawTrailSoon(300);
 }
 
