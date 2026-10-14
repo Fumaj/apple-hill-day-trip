@@ -1,0 +1,1180 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Apple Hill Day Trip 🍎💕</title>
+<meta name="theme-color" content="#D94F5C">
+<meta name="description" content="Our Apple Hill day trip — Wednesday, October 14, 2026.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+<style>
+/* ============================================================
+   APPLE HILL DAY TRIP — cinematic edition 💕
+   Intro → AI guide (typewriter) → guided steps ⇄ full day view.
+   Schedule lives in the STOPS array at the bottom of the script.
+   ============================================================ */
+
+:root{
+  --cream:#FFF7F0;
+  --cream-2:#FFEDE4;
+  --card:#FFFEFB;
+  --rose:#D94F5C;
+  --rose-deep:#B83A48;
+  --rose-soft:#F6A5AE;
+  --blush:#FBD9DE;
+  --orange:#E07B39;
+  --gold:#E8A93D;
+  --green:#7BA05B;
+  --ink:#4A2B2B;
+  --ink-soft:#8A6A66;
+  --line:#F3D9D4;
+  --shadow:0 6px 20px rgba(185,60,75,.10);
+  --radius:28px;
+  --hh:150px;
+  --spring:cubic-bezier(.2,.9,.25,1.18);
+  --smooth:cubic-bezier(.3,.7,.3,1);
+}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+
+body{
+  margin:0;
+  background:var(--cream);
+  background-image:
+    radial-gradient(circle at 10% 6%, rgba(232,169,61,.14), transparent 44%),
+    radial-gradient(circle at 90% 40%, rgba(217,79,92,.10), transparent 42%),
+    radial-gradient(circle at 50% 95%, rgba(246,165,174,.12), transparent 46%);
+  background-attachment:fixed;
+  color:var(--ink);
+  font:16px/1.6 "Quicksand",ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  padding-bottom:64px;
+  overflow-x:hidden;
+}
+
+/* ================= INTRO ================= */
+#intro{
+  position:fixed;inset:0;z-index:200;
+  display:grid;place-items:center;
+  background:
+    radial-gradient(circle at 50% 120%, #FBD9DE 0%, transparent 60%),
+    radial-gradient(circle at 50% -20%, #FFE9C9 0%, transparent 55%),
+    linear-gradient(180deg,#FFF9F2,#FFF1EA);
+  transition:opacity .7s var(--smooth), transform .7s var(--smooth), filter .7s var(--smooth);
+}
+#intro.leaving{opacity:0;transform:scale(1.1);filter:blur(6px);pointer-events:none}
+#intro.gone{display:none}
+.intro-inner{text-align:center;padding:0 28px;max-width:420px}
+.intro-kicker{font-size:30px;letter-spacing:8px;opacity:0;animation:dropIn .7s var(--spring) .15s both}
+.intro-title{
+  font-family:"Baloo 2",ui-rounded,system-ui,sans-serif;font-weight:700;
+  font-size:clamp(30px,8vw,40px);line-height:1.2;margin:14px 0 0;color:var(--ink);
+}
+.intro-title .w{display:inline-block;opacity:0;animation:riseIn .8s var(--spring) both}
+.intro-title .w:nth-child(1){animation-delay:.35s}
+.intro-title .w:nth-child(2){animation-delay:.47s}
+.intro-title .w:nth-child(3){animation-delay:.59s}
+.intro-title .w:nth-child(4){animation-delay:.71s}
+.intro-name{
+  font-family:"Baloo 2",ui-rounded,system-ui,sans-serif;font-weight:800;
+  font-size:clamp(52px,15vw,76px);line-height:1.05;margin:6px 0 0;
+  background:linear-gradient(120deg,#E85D6E,#C73E54 55%,#E8853F);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  opacity:0;animation:nameIn 1s var(--spring) 1.05s both;
+}
+.intro-sub{
+  margin:14px 0 0;font-size:15px;font-weight:600;color:var(--ink-soft);
+  opacity:0;animation:fadeUp .8s var(--smooth) 1.7s both;
+}
+#beginBtn{
+  margin-top:30px;border:0;cursor:pointer;
+  font-family:"Baloo 2",ui-rounded,system-ui,sans-serif;font-weight:700;font-size:17px;
+  color:#FFF3F4;padding:15px 34px;border-radius:999px;
+  background:linear-gradient(165deg,#E85D6E,#C73E54);
+  box-shadow:0 8px 24px rgba(199,62,84,.4);
+  opacity:0;animation:fadeUp .8s var(--smooth) 2.05s both, btnPulse 2.2s ease-in-out 3s infinite;
+  transition:transform .15s ease;
+}
+#beginBtn:active{transform:scale(.94)}
+.intro-tap{margin-top:18px;font-size:12px;color:var(--ink-soft);opacity:0;animation:fadeUp .8s var(--smooth) 2.4s both}
+@keyframes dropIn{0%{opacity:0;transform:translateY(-26px) scale(.7)}100%{opacity:1;transform:none}}
+@keyframes riseIn{0%{opacity:0;transform:translateY(34px) rotate(2deg)}100%{opacity:1;transform:none}}
+@keyframes fadeUp{0%{opacity:0;transform:translateY(18px)}100%{opacity:1;transform:none}}
+@keyframes nameIn{
+  0%{opacity:0;transform:scale(.6);filter:blur(8px)}
+  60%{opacity:1;transform:scale(1.06);filter:blur(0)}
+  100%{opacity:1;transform:scale(1)}
+}
+@keyframes btnPulse{0%,100%{box-shadow:0 8px 24px rgba(199,62,84,.4)}50%{box-shadow:0 8px 32px rgba(199,62,84,.62)}}
+
+/* ================= floating hearts bg ================= */
+#hearts{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+#hearts span{
+  position:absolute;bottom:-40px;color:var(--hc,#E85D6E);
+  opacity:var(--ho,.5);font-size:var(--hs,18px);
+  animation:rise var(--hd,9s) linear forwards;filter:blur(.2px);
+}
+@keyframes rise{
+  0%{transform:translateY(0) translateX(0) rotate(0deg) scale(1);opacity:0}
+  8%{opacity:var(--ho,.5)}
+  50%{transform:translateY(-52vh) translateX(var(--hx,20px)) rotate(14deg) scale(1.08)}
+  92%{opacity:var(--ho,.5)}
+  100%{transform:translateY(-108vh) translateX(calc(var(--hx,20px) * -1)) rotate(-12deg) scale(.94);opacity:0}
+}
+
+.wrap{max-width:560px;margin:0 auto;padding:0 16px;position:relative;z-index:1}
+
+/* ================= Header ================= */
+.hdr{
+  position:sticky;top:0;z-index:50;
+  background:linear-gradient(165deg,#E85D6E,#C73E54 80%);
+  color:#FFF3F4;border-bottom-left-radius:30px;border-bottom-right-radius:30px;
+  box-shadow:0 8px 24px rgba(183,58,72,.28);
+  padding:calc(12px + env(safe-area-inset-top)) 0 13px;
+}
+.hdr-row{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.hdr h1{margin:0;font-size:25px;font-weight:800;font-family:"Baloo 2",ui-rounded,system-ui,sans-serif}
+.clock{
+  font-variant-numeric:tabular-nums;font-size:15px;font-weight:700;
+  background:rgba(255,255,255,.20);padding:4px 12px;border-radius:999px;white-space:nowrap;
+}
+.subtitle{margin:3px 0 11px;font-size:13.5px;opacity:.92;font-weight:500}
+.progress-row{display:flex;align-items:center;gap:10px}
+.track{flex:1;height:10px;border-radius:999px;background:rgba(255,255,255,.24);overflow:hidden}
+.fill{height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,#FFD9A0,#FF9EB0);transition:width .55s var(--spring)}
+.count{font-size:12.5px;font-weight:700;opacity:.97;white-space:nowrap}
+.nudge{margin-top:10px;font-size:13.5px;line-height:1.5;font-weight:500;background:rgba(255,255,255,.18);border-radius:16px;padding:9px 13px}
+
+
+/* ================= notes / dividers ================= */
+.note{
+  background:var(--card);border:1.5px solid var(--line);border-radius:var(--radius);
+  padding:16px 18px;margin:18px 0;box-shadow:var(--shadow);font-size:14.5px;
+}
+.note b{color:var(--rose-deep)}
+.note .note-title{font-family:"Baloo 2",ui-rounded,system-ui,sans-serif;font-size:18px;font-weight:700;display:block;margin-bottom:5px}
+.divider{text-align:center;letter-spacing:10px;color:var(--rose-soft);margin:20px 0 4px;font-size:15px}
+
+/* ================= map & gas ================= */
+.map-card{background:var(--card);border:1.5px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin:18px 0}
+.map-card .map-title{font-family:"Baloo 2",ui-rounded,system-ui,sans-serif;font-weight:700;font-size:18px;padding:14px 18px 10px}
+#map{height:320px;width:100%;z-index:1;border-top:1.5px solid var(--line);border-bottom:1.5px solid var(--line)}
+.map-fallback{padding:18px;text-align:center;font-size:14.5px}
+.stop-dot{
+  width:30px;height:30px;border-radius:50%;background:linear-gradient(165deg,#E85D6E,#C73E54);
+  color:#fff;font-weight:800;font-size:15px;display:grid;place-items:center;
+  border:2.5px solid #fff;box-shadow:0 2px 8px rgba(183,58,72,.4);
+  font-family:"Baloo 2",ui-rounded,system-ui,sans-serif;
+}
+.stop-dot.done{background:linear-gradient(165deg,#8FBF6F,#5E8F4E)}
+.gas-dot{font-size:22px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.25))}
+.leaflet-popup-content{font-family:"Quicksand",sans-serif;font-size:13.5px;line-height:1.45}
+.leaflet-popup-content b{font-family:"Baloo 2",sans-serif}
+.gas{padding:4px 18px 16px;font-size:14px}
+.gas h3{font-family:"Baloo 2",ui-rounded,system-ui,sans-serif;font-size:16px;margin:10px 0 8px}
+.gas ul{list-style:none;margin:0;padding:0}
+.gas li{display:flex;gap:10px;align-items:flex-start;background:var(--cream-2);border:1px solid var(--line);border-radius:16px;padding:10px 12px;margin-bottom:8px}
+.gas .g-emoji{font-size:20px;flex:0 0 auto}
+.gas .g-name{font-weight:700}
+.gas .g-addr{font-size:12.5px;color:var(--ink-soft)}
+.gas .g-tip{font-size:12.5px;color:var(--ink-soft);font-style:italic;margin-top:6px}
+
+/* ================= timeline & cards ================= */
+.timeline{position:relative;padding-left:30px;margin-top:6px}
+.timeline:before{
+  content:"";position:absolute;left:9px;top:16px;bottom:30px;width:3px;
+  background:repeating-linear-gradient(to bottom,var(--rose-soft) 0 8px,transparent 8px 17px);
+  border-radius:2px;opacity:.7;
+}
+.stop{
+  position:relative;margin:0 0 22px;
+  background:var(--card);border:1.5px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);overflow:hidden;
+  scroll-margin-top:calc(var(--hh) + 14px);
+  transition:opacity .4s ease, box-shadow .4s ease, border-color .4s ease;
+}
+.stop:before{content:"❤";position:absolute;left:-29px;top:22px;z-index:2;font-size:19px;color:var(--rose);text-shadow:0 2px 6px rgba(217,79,92,.35)}
+.stop.done{opacity:.55;box-shadow:none;border-color:#E8D5D2}
+.stop.done:before{content:"💚";font-size:17px}
+.photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.photo .badge{
+  position:absolute;left:12px;bottom:11px;z-index:2;background:rgba(255,250,247,.95);color:var(--rose-deep);
+  font-size:12.5px;font-weight:700;padding:6px 13px;border-radius:999px;
+  box-shadow:0 2px 8px rgba(120,40,50,.18);font-family:"Baloo 2",sans-serif;
+}
+.photo .num{
+  position:absolute;right:12px;top:11px;z-index:2;width:31px;height:31px;border-radius:50%;display:grid;place-items:center;
+  background:linear-gradient(165deg,#E85D6E,#C73E54);color:#fff;font-weight:800;font-size:15px;
+  box-shadow:0 2px 8px rgba(183,58,72,.4);font-family:"Baloo 2",sans-serif;
+}
+.stop-head{padding:15px 18px 0}
+.stop-name{margin:0;font-family:"Baloo 2",ui-rounded,system-ui,sans-serif;font-size:21px;line-height:1.25;font-weight:700}
+.stop-name a{color:inherit;text-decoration:none;border-bottom:2.5px dotted var(--rose-soft);transition:border-color .2s ease}
+.stop-name a:hover{border-bottom-color:var(--rose)}
+.g-link{color:var(--rose-deep);font-weight:700;text-decoration:underline dotted;text-underline-offset:2px}
+.addr{margin:5px 0 0;font-size:13.5px;color:var(--ink-soft)}
+.meta{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0}
+.chip{font-size:12px;font-weight:700;padding:5px 11px;border-radius:999px;background:var(--cream-2);color:var(--ink-soft);border:1px solid var(--line)}
+.chip.time{background:#FDEBD6;color:#C75B2A;border-color:#F3D4B0}
+.chip.open{background:#EDF3E4;color:var(--green);border-color:#DCE4CB}
+.body{max-height:1800px;opacity:1;overflow:hidden;transition:max-height .5s ease,opacity .35s ease,padding .5s ease;padding:0 18px 17px}
+.stop.done .body{max-height:0;opacity:0;padding-top:0;padding-bottom:0}
+.blurb{font-size:14.5px;margin:12px 0 4px}
+.cost{font-size:13px;color:var(--ink-soft);margin:8px 0 0;font-style:italic}
+ul.checks{list-style:none;margin:12px 0 0;padding:0}
+ul.checks li{margin:0 0 2px}
+ul.checks label{display:flex;gap:11px;align-items:flex-start;padding:9px 10px;border-radius:15px;font-size:14.5px;font-weight:500;cursor:pointer;transition:background .2s ease}
+ul.checks label:active{background:var(--blush)}
+ul.checks input{
+  appearance:none;-webkit-appearance:none;flex:0 0 auto;margin:1px 0 0;width:22px;height:22px;
+  border:2.5px solid var(--rose-soft);border-radius:50%;background:#fff;cursor:pointer;position:relative;
+  transition:background .2s ease,border-color .2s ease,transform .15s var(--spring);
+}
+ul.checks input:checked{background:var(--rose);border-color:var(--rose);transform:scale(1.08)}
+ul.checks input:checked:after{content:"❤";position:absolute;left:2.5px;top:-1px;font-size:11px;color:#fff}
+ul.checks input:checked + span{text-decoration:line-through;color:var(--ink-soft)}
+.actions{display:flex;gap:10px;margin-top:14px}
+.btn{
+  flex:1;border:0;border-radius:18px;padding:14px 12px;font-size:15px;font-weight:700;
+  font-family:"Baloo 2",ui-rounded,system-ui,sans-serif;cursor:pointer;text-align:center;text-decoration:none;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  transition:transform .18s var(--spring), filter .2s ease, box-shadow .2s ease;
+}
+.btn:active{transform:scale(.93)}
+.btn-nav{background:var(--blush);color:var(--rose-deep);border:1.5px solid #F2BFC6}
+.btn-done{background:linear-gradient(165deg,#E85D6E,#C73E54);color:#FFF3F4;box-shadow:0 4px 12px rgba(199,62,84,.32)}
+.done-row{display:none;align-items:center;gap:9px;padding:0 18px 16px;margin-top:11px;font-size:14px;color:var(--green);font-weight:700}
+.stop.done .done-row{display:flex}
+.done-row .tick{
+  width:26px;height:26px;border-radius:50%;background:var(--green);color:#fff;display:grid;place-items:center;
+  font-size:14px;flex:0 0 auto;animation:pop .45s var(--spring) both;
+}
+.undo{margin-left:auto;background:none;border:0;font:inherit;font-size:13px;font-weight:700;color:var(--ink-soft);text-decoration:underline;cursor:pointer;padding:4px}
+@keyframes pop{0%{transform:scale(.2);opacity:0}60%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
+
+/* heart-burst confetti */
+.confetti{position:absolute;left:50%;bottom:54px;width:0;height:0;pointer-events:none;z-index:5}
+.confetti i{position:absolute;display:block;font-style:normal;font-size:var(--fs,16px);color:var(--fc,#E85D6E);animation:fly .95s cubic-bezier(.15,.7,.4,1) var(--d,0ms) both}
+@keyframes fly{0%{transform:translate(0,0) rotate(0) scale(.6);opacity:1}100%{transform:translate(var(--x,0),-140px) rotate(var(--r,180deg)) scale(1.1);opacity:0}}
+
+/* scroll-reveal orchestration */
+.reveal{opacity:0;transform:translateY(28px) scale(.985);transition:opacity .6s var(--smooth),transform .7s var(--spring)}
+.reveal.in{opacity:1;transform:none}
+
+/* celebration rain */
+#rain{position:fixed;inset:0;z-index:150;pointer-events:none;overflow:hidden;display:none}
+#rain.on{display:block}
+#rain span{position:absolute;top:-40px;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(112vh) rotate(340deg)}}
+
+.reset{display:block;margin:26px auto 0;background:none;border:0;font:inherit;font-size:13px;font-weight:600;color:var(--ink-soft);text-decoration:underline;cursor:pointer;padding:8px}
+.sig{text-align:center;font-size:13.5px;color:var(--ink-soft);margin-top:8px;font-weight:500}
+
+/* ================= winding dotted trail ================= */
+html{scroll-behavior:smooth}
+.trail-wrap{position:relative;margin-top:10px}
+#trailSvg{position:absolute;inset:0;width:100%;z-index:0;pointer-events:none;overflow:visible}
+#trailSvg path{
+  fill:none;stroke:var(--rose-soft);stroke-width:5;stroke-linecap:round;
+  stroke-dasharray:.1 16;opacity:.9;animation:dashFlow 2.8s linear infinite;
+}
+@keyframes dashFlow{to{stroke-dashoffset:-32.2}}
+.timeline.trail{padding-left:0}
+.timeline.trail:before{display:none}
+.timeline.trail .stop{width:88%;margin:0 0 92px;z-index:1;position:relative}
+.timeline.trail .stop:nth-child(odd){margin-right:auto}
+.timeline.trail .stop:nth-child(even){margin-left:auto}
+.timeline.trail .stop:before{display:none}
+.trail-dot{
+  position:absolute;width:17px;height:17px;border-radius:50%;z-index:1;
+  background:#fff;border:4.5px solid var(--rose);transform:translate(-50%,-50%);
+  animation:dotPulse 2.4s ease-in-out infinite;pointer-events:none;
+}
+@keyframes dotPulse{0%,100%{box-shadow:0 0 0 5px rgba(217,79,92,.18)}50%{box-shadow:0 0 0 12px rgba(217,79,92,.05)}}
+.trail-kicker{text-align:center;font-size:13px;font-weight:700;color:var(--rose-deep);margin:2px 0 14px;opacity:.85}
+
+/* ================= add-your-own activities ================= */
+.add-row{display:flex;gap:8px;margin-top:10px}
+.add-row input{
+  flex:1;border:1.5px dashed var(--rose-soft);border-radius:14px;padding:10px 13px;
+  font:inherit;font-size:14px;background:#fff;color:var(--ink);outline:none;min-width:0;
+}
+.add-row input:focus{border-style:solid;border-color:var(--rose)}
+.add-row button{
+  flex:0 0 auto;width:46px;border-radius:14px;border:0;cursor:pointer;
+  background:linear-gradient(165deg,#E85D6E,#C73E54);color:#fff;font-size:20px;font-weight:800;
+  transition:transform .15s var(--spring);
+}
+.add-row button:active{transform:scale(.88)}
+ul.checks li.custom label{background:var(--cream-2)}
+.rm{
+  margin-left:auto;flex:0 0 auto;background:none;border:0;color:var(--ink-soft);
+  font-size:17px;cursor:pointer;padding:2px 7px;border-radius:8px;line-height:1;font-weight:700;
+}
+.rm:active{transform:scale(.88)}
+
+/* ================= reminders ================= */
+.remind-wrap{display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap;text-align:center;margin:18px 0 4px}
+.remind-note{flex-basis:100%;font-size:12.5px;color:var(--ink-soft);margin:8px auto 0;max-width:420px}
+.wx{display:inline-block;margin-left:4px;background:rgba(255,255,255,.2);padding:3px 10px;border-radius:999px;font-weight:700;font-size:12.5px}
+.where-btn{
+  border:1.5px solid #F2BFC6;cursor:pointer;font-family:"Baloo 2",ui-rounded,system-ui,sans-serif;
+  font-weight:700;font-size:15px;padding:12px 24px;border-radius:999px;
+  color:var(--rose-deep);background:var(--blush);transition:transform .15s var(--spring);
+}
+.where-btn:active{transform:scale(.94)}
+
+/* "you are here" highlight */
+.stop.here{border:2.5px solid var(--rose);animation:herePulse 2.2s ease-in-out infinite}
+@keyframes herePulse{
+  0%,100%{box-shadow:0 0 0 5px rgba(232,93,110,.22),var(--shadow)}
+  50%{box-shadow:0 0 0 12px rgba(232,93,110,.07),var(--shadow)}
+}
+.here-badge{
+  position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:3;white-space:nowrap;
+  background:linear-gradient(165deg,#E85D6E,#C73E54);color:#fff;
+  font-family:"Baloo 2",ui-rounded,system-ui,sans-serif;font-weight:800;font-size:12.5px;
+  padding:6px 14px;border-radius:999px;box-shadow:0 4px 12px rgba(199,62,84,.4);
+  animation:pop .45s var(--spring) both;
+}
+.you-dot{
+  width:20px;height:20px;border-radius:50%;background:#2E7CF6;border:3.5px solid #fff;
+  box-shadow:0 0 0 6px rgba(46,124,246,.25),0 2px 8px rgba(0,0,0,.3);
+  animation:youPulse 2s ease-in-out infinite;
+}
+@keyframes youPulse{50%{box-shadow:0 0 0 12px rgba(46,124,246,.1),0 2px 8px rgba(0,0,0,.3)}}
+.remind-btn{
+  border:0;cursor:pointer;font-family:"Baloo 2",ui-rounded,system-ui,sans-serif;font-weight:700;font-size:15px;
+  padding:13px 26px;border-radius:999px;color:#FFF3F4;
+  background:linear-gradient(165deg,#E85D6E,#C73E54);box-shadow:0 6px 18px rgba(199,62,84,.35);
+  transition:transform .15s var(--spring);
+}
+.remind-btn:active{transform:scale(.94)}
+.remind-btn.on{background:linear-gradient(165deg,#8FBF6F,#5E8F4E);box-shadow:0 6px 18px rgba(94,143,78,.35)}
+.remind-note{font-size:12.5px;color:var(--ink-soft);margin:8px auto 0;max-width:420px}
+
+/* ================= desktop ================= */
+@media (min-width:900px){
+  .wrap{max-width:1060px}
+  .hdr h1{font-size:30px}
+  .timeline.trail .stop{width:44%;margin-bottom:110px}
+  .map-card{display:grid;grid-template-columns:7fr 5fr}
+  .map-card .map-title{grid-column:1/-1}
+  #map{height:100%;min-height:440px;border-top:0;border-bottom:0}
+  .map-fallback{grid-column:1}
+  .gas{grid-column:2;border-left:1.5px solid var(--line);padding:14px 20px 18px}
+  .gas h3{margin-top:4px}
+  .note{font-size:15px}
+  .intro-name{font-size:clamp(52px,9vw,84px)}
+}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition-duration:.01ms!important}
+  #hearts{display:none}
+  .reveal{opacity:1;transform:none}
+}
+</style>
+</head>
+
+<body>
+
+<!-- ============ INTRO ============ -->
+<div id="intro" aria-hidden="true">
+  <div class="intro-inner" id="introInner">
+    <div class="intro-kicker">🍎 ✨ 🍏</div>
+    <h1 class="intro-title"><span class="w">Welcome</span> <span class="w">to</span> <span class="w">our</span> <span class="w">date</span></h1>
+    <div class="intro-name">Karina 💕</div>
+    <p class="intro-sub">Apple Hill · Wednesday, October 14, 2026</p>
+    <button id="beginBtn">Begin our adventure →</button>
+    <p class="intro-tap">tap anywhere to skip</p>
+  </div>
+</div>
+<div id="rain" aria-hidden="true"></div>
+<div id="hearts" aria-hidden="true"></div>
+
+<header class="hdr" id="hdr">
+  <div class="wrap">
+    <div class="hdr-row">
+      <h1>Apple Hill Day Trip 💕</h1>
+      <div class="clock" id="clock">--:--</div>
+    </div>
+    <p class="subtitle">Wednesday, October 14, 2026 · Camino, CA 🍎 <span class="wx" id="wxPill" style="display:none"></span></p>
+    <div class="progress-row">
+      <div class="track"><div class="fill" id="fill"></div></div>
+      <span class="count" id="count">0 of 5 done</span>
+    </div>
+    <div class="nudge" id="nudge">Loading the day…</div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ FULL DAY ============ -->
+  <section id="dayView">
+    <div class="remind-wrap reveal">
+      <button id="remindBtn" class="remind-btn">🔔 Remind me at each stop</button>
+      <button id="whereBtn" class="where-btn">📍 Where are we?</button>
+      <p class="remind-note">Reminders ping from this page while it's open. iPhones can't buzz from a closed tab — for real phone alerts, Toby's got you.</p>
+    </div>
+
+    <div class="note reveal">
+      <span class="note-title">9:00 AM — leave Davis 🚗💨</span>
+      About <b>1 hr 15 min</b> up to Camino. First stop opens at 9, so there's no rush —
+      grab coffee, pick the playlist, and let the hills do the rest.
+    </div>
+
+    <div class="divider">❤ ❤ ❤</div>
+
+    <div class="map-card reveal">
+      <div class="map-title">🗺️ Our route today</div>
+      <div id="map"></div>
+      <div class="map-fallback" id="mapFallback" style="display:none">
+        Couldn't load the map — <a href="https://maps.apple.com/?daddr=Camino,+CA">open the route in Apple Maps instead 🍎</a>
+      </div>
+      <div class="gas">
+        <h3>⛽ Cheap gas along the way</h3>
+        <ul>
+          <li>
+            <span class="g-emoji">⛽</span>
+            <div><a class="g-link" target="_blank" rel="noopener" href="https://maps.apple.com/?daddr=3590%20Carson%20Rd%2C%20Camino%2C%20CA">ARCO</a> · <span class="g-addr">3590 Carson Rd, Camino</span><br>
+            <span class="g-tip">Right by the farms — usually the cheapest on the hill.</span></div>
+          </li>
+          <li>
+            <span class="g-emoji">⛽</span>
+            <div><a class="g-link" target="_blank" rel="noopener" href="https://maps.apple.com/?daddr=3074%20Camino%20Heights%20Dr%2C%20Camino%2C%20CA">204 Fuels</a> · <span class="g-addr">3074 Camino Heights Dr, Camino</span><br>
+            <span class="g-tip">Locals say great prices. Check GasBuddy before you go.</span></div>
+          </li>
+        </ul>
+        <p class="g-tip">💡 Valley gas (Davis / Sacramento) is almost always cheaper than the foothills — top off before you head up US-50.</p>
+      </div>
+    </div>
+
+    <div class="divider">❤ ❤ ❤</div>
+
+    <div class="trail-wrap" id="trailWrap">
+      <svg id="trailSvg" aria-hidden="true"><path d=""/></svg>
+      <div class="trail-kicker">follow the dotted trail 💕</div>
+      <div class="timeline trail" id="timeline"><!-- cards injected by JS --></div>
+    </div>
+
+    <div class="note reveal">
+      <span class="note-title">4:30 PM — head home 🍂💛</span>
+      Leaving High Hill by <b>4:30</b> keeps you ahead of Sacramento rush hour.
+      Roughly <b>1 hr 15 min</b> back to Davis — perfect nap length for whoever isn't driving.
+    </div>
+
+    <p class="sig">Made for us 💕 Tap a stop's Done button as we go.</p>
+    <button class="reset" id="reset">Start the day over</button>
+  </section>
+
+</main>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+/* ============================================================
+   1. THE ITINERARY — edit times/text here ("H:MM" 24-hour)
+   ============================================================ */
+const STOPS = [
+  {
+    id:"rainbow",
+    name:"Rainbow Orchards",
+    address:"2569 Larsen Dr, Camino, CA",
+    site:"http://rainboworchards.net/",
+    lat:38.74896, lng:-120.68028,
+    hours:"Open today 9 AM – 4 PM",
+    start:"10:30", end:"11:30",
+    badge:"🍩 Donut stop",
+    blurb:"The donuts are fried hot to order, so eat one standing right there — that's the whole point. Then a cup of cider for the road.",
+    cost:"Pay as you go. Bring a little cash just in case the line moves faster that way.",
+    guide:"First stop, cuties! 🍩 Rainbow Orchards fries their cider donuts hot to order — eat one standing right there, that's the rule. Aim to roll in around 10:30.",
+    todo:["Apple cider donuts, straight out of the fryer","Cold apple cider","Photo on/by the tractors","Photo down the orchard rows"],
+    img:"https://images.unsplash.com/photo-1570913149827-d2ac84ab3f9a?auto=format&fit=crop&w=900&q=70",
+    grad:"linear-gradient(135deg,#E8853F,#B3342C)"
+  },
+  {
+    id:"appleridge",
+    name:"Apple Ridge Farms",
+    address:"1800 Larsen Dr, Camino, CA",
+    site:"http://appleridgefarms.com/",
+    lat:38.74908, lng:-120.66543,
+    hours:"Open today 10 AM – 5 PM",
+    start:"11:45", end:"13:00",
+    badge:"🦋 Flower trail",
+    blurb:"The Zinnia trail is a 0.75-mile loop through flowers and butterfly sculptures. There's a butterfly-wings spot made for exactly one photo of her — take it.",
+    cost:"Trail is a walk-up. Bakery is pay as you go.",
+    guide:"Next up: flowers and butterflies! 🦋 The Zinnia trail is an easy 0.75-mile loop — and there's a butterfly-wings photo spot with Karina's name on it.",
+    todo:["Walk the Zinnia trail (0.75 mi round trip)","Find the butterfly sculptures","Butterfly-wings photo 🦋","Walkin' pie from the bakery","Grab a turnover for later"],
+    img:"https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=900&q=70",
+    grad:"linear-gradient(135deg,#E0A32E,#C75B2A)"
+  },
+  {
+    id:"ohalloran",
+    name:"O'Halloran's Apple Trail Ranch",
+    address:"2261 Cable Rd, Camino, CA",
+    site:"https://ohalloranranch.com/",
+    lat:38.74998, lng:-120.65992,
+    hours:"Open today 9 AM – 5 PM",
+    start:"13:15", end:"14:30",
+    badge:"🎃 The big one",
+    blurb:"The main event: pick your own apples, cut a pumpkin right off the vine, say hi to the animals, then wander the sunflower and zinnia fields.",
+    cost:"U-pick apples $4 · Pumpkin patch $4. Cheapest fun of the day.",
+    guide:"The main event! 🎃 Pick your own apples, cut a pumpkin right off the vine, and say hi to the animals. Four bucks each — cheapest fun of the day.",
+    todo:["U-pick apples ($4)","Cut a pumpkin off the vine ($4)","Visit the animals","Sunflower + zinnia fields","Walk the nature trail"],
+    img:"https://images.unsplash.com/photo-1506976785307-8732e854ad03?auto=format&fit=crop&w=900&q=70",
+    grad:"linear-gradient(135deg,#E8853F,#E0A32E)"
+  },
+  {
+    id:"hiddenstar",
+    name:"Hidden Star Camino",
+    address:"2740 Cable Rd, Camino, CA",
+    site:"https://applehill.com/growers/hidden-star-camino/",
+    lat:38.74076, lng:-120.6733,
+    hours:"Open today 9 AM – 6 PM",
+    start:"14:45", end:"15:30",
+    badge:"🍻 Hard cider",
+    blurb:"Hard cider taproom with 24 varieties on the board. Get a flight, take it out to the picnic tables, and sit with the mountain view for a bit. Slow stop on purpose.",
+    cost:"Flight tasting + bakery, pay as you go. Whoever's driving home splits a flight, not drinks one.",
+    guide:"Slow down, you two 🍻 Hard cider flight with a mountain view from the picnic tables. Sip it slow — and remember who's driving home!",
+    todo:["Share a hard cider flight 🍏","Picnic table with the mountain view","Panorama photo","Peek at the bakery"],
+    img:"https://images.unsplash.com/photo-1514361892635-6b07e31e75f9?auto=format&fit=crop&w=900&q=70",
+    grad:"linear-gradient(135deg,#6E7F4E,#C75B2A)"
+  },
+  {
+    id:"highhill",
+    name:"High Hill Ranch",
+    address:"2901 High Hill Rd, Placerville, CA",
+    site:"https://www.highhillranch.com/",
+    lat:38.73996, lng:-120.71229,
+    hours:"Open today 9 AM – 5 PM",
+    start:"15:45", end:"16:30",
+    badge:"🥧 Last stop",
+    blurb:"Craft fair with 60+ artists, pies baked on-site, and caramel apples. Buy a pie to take home — it's the souvenir that actually gets used.",
+    cost:"Craft fair browsing is free. Pie money is a required expense, sorry.",
+    guide:"Last stop! 🥧 Craft fair, fresh-baked pies, caramel apples. Grab a pie for the road — future you says thanks. Head out by 4:30!",
+    todo:["Walk the craft fair (60+ artists)","Buy a pie to take home 🥧","Apple donuts","Caramel apple","Leave by 4:30 to beat traffic"],
+    img:"https://images.unsplash.com/photo-1535920527002-b35e96722eb9?auto=format&fit=crop&w=900&q=70",
+    grad:"linear-gradient(135deg,#B3342C,#E0A32E)"
+  }
+];
+
+const GAS = [
+  {name:"ARCO", address:"3590 Carson Rd, Camino, CA", lat:38.74047, lng:-120.69785, tip:"Usually the cheapest on the hill."},
+  {name:"204 Fuels", address:"3074 Camino Heights Dr, Camino, CA", lat:38.73611, lng:-120.7105, tip:"Locals say great prices."}
+];
+
+const TRIP_DATE = {y:2026, m:10, d:14};
+const STORE_KEY = "appleHillTrip2026";
+const HEART_COLORS = ["#E85D6E","#F06B7D","#D94F5C","#F6A5AE","#C73E54"];
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+/* ============================================================
+   2. SAVED STATE
+   ============================================================ */
+let state = loadState();
+function loadState(){
+  try{ const raw = localStorage.getItem(STORE_KEY); if(raw) return JSON.parse(raw); }catch(e){}
+  return {done:{}, checks:{}, custom:{}, mode:"guide", introSeen:false};
+}
+function saveState(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }catch(e){} }
+state.custom = state.custom || {};   // migrate older saved state
+
+/* ============================================================
+   3. FLOATING HEARTS BACKGROUND
+   ============================================================ */
+(function hearts(){
+  if(window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const layer = document.getElementById("hearts");
+  function spawn(){
+    const h = document.createElement("span");
+    h.textContent = "❤";
+    h.style.left = (Math.random() * 100) + "vw";
+    h.style.setProperty("--hs", (11 + Math.random() * 17).toFixed(0) + "px");
+    h.style.setProperty("--hc", HEART_COLORS[(Math.random() * HEART_COLORS.length) | 0]);
+    h.style.setProperty("--ho", (0.28 + Math.random() * 0.3).toFixed(2));
+    h.style.setProperty("--hd", (7 + Math.random() * 6).toFixed(1) + "s");
+    h.style.setProperty("--hx", ((Math.random() * 70) - 35).toFixed(0) + "px");
+    layer.appendChild(h);
+    setTimeout(() => h.remove(), 14000);
+  }
+  for(let i = 0; i < 6; i++) setTimeout(spawn, i * 700);
+  setInterval(spawn, 2600);
+})();
+
+/* ============================================================
+   4. INTRO SEQUENCE
+   ============================================================ */
+(function intro(){
+  const intro = document.getElementById("intro");
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function dismiss(){
+    if(intro.classList.contains("leaving")) return;
+    intro.classList.add("leaving");
+    state.introSeen = true; saveState();
+    setTimeout(() => intro.classList.add("gone"), 750);
+  }
+  document.getElementById("beginBtn").addEventListener("click", e => {
+    e.stopPropagation();
+    burstAt(e.clientX || innerWidth/2, e.clientY || innerHeight/2);
+    setTimeout(dismiss, 280);
+  });
+  intro.addEventListener("click", dismiss);
+
+  if(reduce || state.introSeen){
+    // encore: a quick "welcome back" instead of the full show
+    document.getElementById("introInner").innerHTML =
+      `<div class="intro-kicker">💕</div>
+       <div class="intro-name" style="font-size:clamp(40px,11vw,56px);animation-duration:.6s">Welcome back!</div>
+       <p class="intro-sub" style="animation-delay:.4s">tap to continue</p>`;
+    setTimeout(dismiss, 1400);
+  }
+  // safety: never trap the user behind the intro
+  setTimeout(() => { if(!intro.classList.contains("gone")) dismiss(); }, 12000);
+})();
+
+// tiny heart burst anywhere on screen (used by the intro button)
+function burstAt(x, y){
+  if(window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const box = document.createElement("div");
+  box.style.cssText = `position:fixed;left:${x}px;top:${y}px;z-index:300;pointer-events:none`;
+  for(let i = 0; i < 16; i++){
+    const bit = document.createElement("i");
+    bit.textContent = "❤";
+    bit.style.cssText = `position:absolute;font-size:${12+Math.random()*12}px;color:${HEART_COLORS[i%HEART_COLORS.length]};
+      animation:fly2 .9s cubic-bezier(.15,.7,.4,1) ${(Math.random()*120)|0}ms both;
+      --x:${(Math.random()*220-110)|0}px;`;
+    box.appendChild(bit);
+  }
+  document.body.appendChild(box);
+  setTimeout(() => box.remove(), 1300);
+}
+const _fly2 = document.createElement("style");
+_fly2.textContent = "@keyframes fly2{0%{transform:translate(0,0) scale(.5);opacity:1}100%{transform:translate(var(--x),-120px) rotate(160deg) scale(1.1);opacity:0}}";
+document.head.appendChild(_fly2);
+
+/* ============================================================
+   5. MAP (Leaflet)
+   ============================================================ */
+let map = null, mapInit = false, routeBounds = null;
+function initMap(){
+  if(mapInit) return; mapInit = true;
+  const el = document.getElementById("map");
+  if(!window.L){ document.getElementById("mapFallback").style.display = "block"; el.style.display = "none"; return; }
+  try{
+    map = L.map("map", {scrollWheelZoom:false});
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 18,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(map);
+    const routePts = [];
+    STOPS.forEach((s, i) => {
+      routePts.push([s.lat, s.lng]);
+      const icon = L.divIcon({className:"", html:`<div class="stop-dot${state.done[s.id]?" done":""}">${i+1}</div>`, iconSize:[30,30], iconAnchor:[15,15]});
+      L.marker([s.lat, s.lng], {icon}).addTo(map)
+        .bindPopup(`<b>${i+1}. ${s.name}</b><br>${fmt(s.start)} – ${fmt(s.end)}<br><a href="https://maps.apple.com/?daddr=${encodeURIComponent(s.address)}">Navigate in Apple Maps 🍎</a>`);
+    });
+    GAS.forEach(g => {
+      const icon = L.divIcon({className:"", html:'<div class="gas-dot">⛽</div>', iconSize:[26,26], iconAnchor:[13,13]});
+      L.marker([g.lat, g.lng], {icon}).addTo(map)
+        .bindPopup(`<b>⛽ ${g.name}</b><br>${g.address}<br><i>${g.tip}</i><br><a href="https://maps.apple.com/?daddr=${encodeURIComponent(g.address)}">Navigate in Apple Maps 🍎</a>`);
+    });
+    L.polyline(routePts, {color:"#E85D6E", weight:3.5, opacity:.75, dashArray:"9 7", lineJoin:"round"}).addTo(map);
+    routeBounds = L.latLngBounds(routePts.concat(GAS.map(g => [g.lat, g.lng]))).pad(0.12);
+    map.fitBounds(routeBounds);
+  }catch(e){
+    document.getElementById("mapFallback").style.display = "block";
+    el.style.display = "none";
+  }
+}
+
+// re-fit after layout settles — a map initialized while its container
+// had no size yet will otherwise come out zoomed way too far out
+function refitMap(){
+  if(!map || !routeBounds) return;
+  map.invalidateSize();
+  setTimeout(() => { try{ map.fitBounds(routeBounds); }catch(e){} }, 80);
+}
+
+/* ============================================================
+   6. STOP CARDS (shared by both views)
+   ============================================================ */
+function esc(s){ return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+// built-in todos + the user's own added activities, as one list
+function allItems(stop){ return stop.todo.concat(state.custom[stop.id] || []); }
+
+function checksHTML(stop){
+  const checks = state.checks[stop.id] || [];
+  return allItems(stop).map((t, n) => {
+    const isCustom = n >= stop.todo.length;
+    return `<li class="${isCustom ? "custom" : ""}"><label>
+      <input type="checkbox" data-stop="${stop.id}" data-i="${n}" ${checks[n] ? "checked" : ""}>
+      <span>${isCustom ? esc(t) : t}</span>
+      ${isCustom ? `<button class="rm" data-rm="${stop.id}" data-i="${n}" aria-label="Remove">×</button>` : ""}
+    </label></li>`;
+  }).join("");
+}
+
+function stopCardHTML(stop, i){
+  const isDone = !!state.done[stop.id];
+  return `
+  <section class="stop${isDone ? " done" : ""} reveal" id="stop-${stop.id}">
+    <div class="photo" style="background:${stop.grad}">
+      <img src="${stop.img}" alt="" loading="lazy" onerror="this.remove()">
+      <span class="num">${i + 1}</span>
+      <span class="badge">${stop.badge}</span>
+    </div>
+    <div class="stop-head">
+      <h2 class="stop-name"><a href="${stop.site}" target="_blank" rel="noopener">${stop.name} <span style="font-size:13px">↗</span></a></h2>
+      <p class="addr">${stop.address}</p>
+      <div class="meta">
+        <span class="chip time">${fmt(stop.start)} – ${fmt(stop.end)}</span>
+        <span class="chip open">${stop.hours}</span>
+      </div>
+    </div>
+    <div class="body">
+      <p class="blurb">${stop.blurb}</p>
+      <ul class="checks">
+        ${checksHTML(stop)}
+      </ul>
+      <div class="add-row">
+        <input type="text" data-addinput="${stop.id}" placeholder="Add your own idea… 💡" maxlength="60" autocomplete="off">
+        <button data-add="${stop.id}" aria-label="Add activity">＋</button>
+      </div>
+      <p class="cost">${stop.cost}</p>
+      <div class="actions">
+        <a class="btn btn-nav" target="_blank" rel="noopener"
+           href="https://maps.apple.com/?daddr=${encodeURIComponent(stop.address)}">📍 Navigate</a>
+        <button class="btn btn-done" data-done="${stop.id}">Done ✓</button>
+      </div>
+    </div>
+    <div class="done-row">
+      <span class="tick">✓</span> Stop ${i + 1} done 💕
+      <button class="undo" data-undo="${stop.id}">undo</button>
+    </div>
+  </section>`;
+}
+
+const timeline = document.getElementById("timeline");
+STOPS.forEach((s, i) => timeline.insertAdjacentHTML("beforeend", stopCardHTML(s, i)));
+
+/* scroll-reveal orchestration */
+const revealObs = new IntersectionObserver(entries => {
+  entries.forEach(en => {
+    if(en.isIntersecting){
+      const sibs = [...en.target.parentElement.querySelectorAll(".reveal")];
+      en.target.style.transitionDelay = Math.min(sibs.indexOf(en.target) * 90, 450) + "ms";
+      en.target.classList.add("in");
+      revealObs.unobserve(en.target);
+      drawTrailSoon(750);   // re-snap the trail once the entrance settles
+    }
+  });
+}, {threshold:.08, rootMargin:"0px 0px -6% 0px"});
+document.querySelectorAll(".reveal").forEach(el => revealObs.observe(el));
+
+
+/* ============================================================
+   9. SHARED INTERACTIONS (both views)
+   ============================================================ */
+document.querySelector("main").addEventListener("change", e => {
+  const box = e.target.closest("input[type=checkbox]");
+  if(!box) return;
+  const id = box.dataset.stop;
+  state.checks[id] = state.checks[id] || [];
+  state.checks[id][+box.dataset.i] = box.checked;
+  saveState();
+});
+
+document.querySelector("main").addEventListener("click", e => {
+  const doneBtn = e.target.closest("[data-done]");
+  const undoBtn = e.target.closest("[data-undo]");
+  const addBtn = e.target.closest("[data-add]");
+  const rmBtn = e.target.closest("[data-rm]");
+
+  if(addBtn){
+    const card = addBtn.closest(".stop");
+    const inp = card.querySelector("[data-addinput]");
+    const val = inp.value.trim();
+    if(!val){ inp.focus(); return; }
+    addCustom(addBtn.dataset.add, val);
+    inp.value = "";
+    return;
+  }
+  if(rmBtn){
+    e.preventDefault();   // sits inside a <label> — don't toggle the checkbox
+    removeCustom(rmBtn.dataset.rm, +rmBtn.dataset.i);
+    return;
+  }
+
+  if(doneBtn){
+    const id = doneBtn.dataset.done;
+    state.done[id] = true; saveState();
+    const card = doneBtn.closest(".stop");
+    burst(card);
+    card.classList.add("done");
+    refreshHeader();
+    drawTrailSoon();
+    if(allDone()) celebrate();
+    setTimeout(() => scrollToNext(id), 420);
+  }
+
+  if(undoBtn){
+    const id = undoBtn.dataset.undo;
+    delete state.done[id]; saveState();
+    document.getElementById("stop-" + id).classList.remove("done");
+    refreshHeader(); drawTrailSoon();
+  }
+});
+
+function scrollToNext(fromId){
+  const idx = STOPS.findIndex(s => s.id === fromId);
+  const next = STOPS.slice(idx + 1).find(s => !state.done[s.id]) || STOPS.slice(idx + 1)[0];
+  const el = next ? document.getElementById("stop-" + next.id) : document.querySelector(".sig");
+  if(el) el.scrollIntoView({behavior:"smooth", block:"start"});
+}
+
+// heart burst on a card
+function burst(card){
+  if(window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const box = document.createElement("div");
+  box.className = "confetti";
+  for(let i = 0; i < 14; i++){
+    const bit = document.createElement("i");
+    bit.textContent = "❤";
+    bit.style.setProperty("--fc", HEART_COLORS[i % HEART_COLORS.length]);
+    bit.style.setProperty("--fs", (12 + Math.random() * 10).toFixed(0) + "px");
+    bit.style.setProperty("--x", (Math.random() * 170 - 85).toFixed(0) + "px");
+    bit.style.setProperty("--r", (Math.random() * 540 - 270).toFixed(0) + "deg");
+    bit.style.setProperty("--d", (Math.random() * 130).toFixed(0) + "ms");
+    box.appendChild(bit);
+  }
+  card.appendChild(box);
+  setTimeout(() => box.remove(), 1300);
+}
+
+// ---- custom activities ----
+function addCustom(id, text){
+  state.custom[id] = state.custom[id] || [];
+  state.custom[id].push(text);
+  state.checks[id] = state.checks[id] || [];
+  state.checks[id].push(false);
+  saveState();
+  const n = STOPS.find(s => s.id === id).todo.length + state.custom[id].length - 1;
+  document.querySelectorAll(`#stop-${id} .checks`).forEach(ul => {
+    ul.insertAdjacentHTML("beforeend",
+      `<li class="custom"><label>
+        <input type="checkbox" data-stop="${id}" data-i="${n}">
+        <span>${esc(text)}</span>
+        <button class="rm" data-rm="${id}" data-i="${n}" aria-label="Remove">×</button>
+      </label></li>`);
+  });
+  drawTrailSoon(300);
+}
+
+function removeCustom(id, n){
+  const stop = STOPS.find(s => s.id === id);
+  const j = n - stop.todo.length;
+  if(j < 0 || !state.custom[id] || j >= state.custom[id].length) return;
+  state.custom[id].splice(j, 1);
+  if(state.checks[id]) state.checks[id].splice(n, 1);
+  saveState();
+  // rebuild the lists so the indices stay correct
+  document.querySelectorAll(`#stop-${id} .checks`).forEach(ul => {
+    ul.innerHTML = checksHTML(stop);
+  });
+  drawTrailSoon(300);
+}
+
+// Enter key in the "add your own" input
+document.querySelector("main").addEventListener("keydown", e => {
+  if(e.key === "Enter" && e.target.matches("[data-addinput]")){
+    e.preventDefault();
+    const val = e.target.value.trim();
+    if(val){ addCustom(e.target.dataset.addinput, val); e.target.value = ""; }
+  }
+});
+
+// ---- winding dotted trail ----
+function smoothPath(pts){
+  if(pts.length < 2) return "";
+  let d = `M ${pts[0].x.toFixed(1)},${pts[0].y.toFixed(1)}`;
+  for(let i = 0; i < pts.length - 1; i++){
+    const p0 = pts[Math.max(0, i - 1)], p1 = pts[i],
+          p2 = pts[i + 1], p3 = pts[Math.min(pts.length - 1, i + 2)];
+    const c1x = p1.x + (p2.x - p0.x) / 6, c1y = p1.y + (p2.y - p0.y) / 6;
+    const c2x = p2.x - (p3.x - p1.x) / 6, c2y = p2.y - (p3.y - p1.y) / 6;
+    d += ` C ${c1x.toFixed(1)},${c1y.toFixed(1)} ${c2x.toFixed(1)},${c2y.toFixed(1)} ${p2.x.toFixed(1)},${p2.y.toFixed(1)}`;
+  }
+  return d;
+}
+
+function drawTrail(){
+  const wrap = document.getElementById("trailWrap");
+  const svg = document.getElementById("trailSvg");
+  if(!wrap || !svg) return;
+  const cards = [...document.querySelectorAll("#timeline .stop")];
+  if(!cards.length) return;
+  wrap.querySelectorAll(".trail-dot").forEach(d => d.remove());
+  const wrapRect = wrap.getBoundingClientRect();
+  const W = wrap.clientWidth;
+  const pts = [];
+  const r0 = cards[0].getBoundingClientRect();
+  pts.push({x: W / 2, y: Math.max(0, r0.top - wrapRect.top - 36)});
+  const anchors = [];
+  cards.forEach((card, i) => {
+    const r = card.getBoundingClientRect();
+    const y = r.top - wrapRect.top + r.height / 2;
+    // anchor just outside the card's outer edge — correct at any card width
+    const x = (i % 2 === 0)
+      ? Math.min(W - 10, r.right - wrapRect.left + 16)
+      : Math.max(10, r.left - wrapRect.left - 16);
+    pts.push({x, y});
+    anchors.push({x, y});
+  });
+  const rl = cards[cards.length - 1].getBoundingClientRect();
+  const H = rl.bottom - wrapRect.top + 90;
+  pts.push({x: W / 2, y: rl.bottom - wrapRect.top + 58});
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.style.height = H + "px";
+  svg.querySelector("path").setAttribute("d", smoothPath(pts));
+  anchors.forEach((a, i) => {
+    const dot = document.createElement("div");
+    dot.className = "trail-dot";
+    dot.style.left = a.x + "px";
+    dot.style.top = a.y + "px";
+    dot.style.animationDelay = (i * 0.3) + "s";
+    wrap.appendChild(dot);
+  });
+}
+let trailT;
+function drawTrailSoon(ms = 650){ clearTimeout(trailT); trailT = setTimeout(drawTrail, ms); }
+
+// full-screen hearts rain (all stops complete!)
+function celebrate(){
+  if(window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const rain = document.getElementById("rain");
+  rain.classList.add("on");
+  for(let i = 0; i < 46; i++){
+    const h = document.createElement("span");
+    h.textContent = "❤";
+    h.style.left = (Math.random() * 100) + "vw";
+    h.style.fontSize = (12 + Math.random() * 20).toFixed(0) + "px";
+    h.style.color = HEART_COLORS[(Math.random() * HEART_COLORS.length) | 0];
+    h.style.opacity = (.55 + Math.random() * .4).toFixed(2);
+    h.style.animationDuration = (2.4 + Math.random() * 2.2).toFixed(2) + "s";
+    h.style.animationDelay = (Math.random() * 1.4).toFixed(2) + "s";
+    rain.appendChild(h);
+    setTimeout(() => h.remove(), 6000);
+  }
+  setTimeout(() => rain.classList.remove("on"), 6000);
+}
+
+document.getElementById("reset").addEventListener("click", () => {
+  if(!confirm("Clear all checkmarks and start the day fresh?")) return;
+  state.done = {}; state.checks = {}; saveState();
+  document.querySelectorAll(".stop").forEach(c => c.classList.remove("done"));
+  document.querySelectorAll(".checks input").forEach(b => b.checked = false);
+  refreshHeader();
+  window.scrollTo({top:0, behavior:"smooth"});
+});
+
+/* ============================================================
+   10. CLOCK, PROGRESS & NUDGES
+   ============================================================ */
+function fmt(hhmm){
+  const [h, m] = hhmm.split(":").map(Number);
+  const ampm = h >= 12 ? "PM" : "AM";
+  const h12 = h % 12 === 0 ? 12 : h % 12;
+  return `${h12}:${String(m).padStart(2,"0")} ${ampm}`;
+}
+function tripTime(hhmm){
+  const [h, m] = hhmm.split(":").map(Number);
+  return new Date(TRIP_DATE.y, TRIP_DATE.m - 1, TRIP_DATE.d, h, m, 0, 0);
+}
+function isTripDay(now){
+  return now.getFullYear() === TRIP_DATE.y &&
+         now.getMonth() === TRIP_DATE.m - 1 &&
+         now.getDate() === TRIP_DATE.d;
+}
+function round5(mins){ return Math.max(5, Math.round(mins / 5) * 5); }
+
+function refreshHeader(){
+  const now = new Date();
+  document.getElementById("clock").textContent =
+    now.toLocaleTimeString([], {hour:"numeric", minute:"2-digit"});
+  const doneCount = STOPS.filter(s => state.done[s.id]).length;
+  document.getElementById("fill").style.width = (doneCount / STOPS.length * 100) + "%";
+  document.getElementById("count").textContent = `${doneCount} of ${STOPS.length} done 💕`;
+  document.getElementById("nudge").innerHTML = nudgeText(now, doneCount);
+  document.documentElement.style.setProperty("--hh",
+    document.getElementById("hdr").offsetHeight + "px");
+}
+
+function nudgeText(now, doneCount){
+  if(doneCount === STOPS.length)
+    return "All five stops done 🍎 drive safe, you two — pie's in the back seat 💕";
+  if(!isTripDay(now)){
+    const diff = Math.round((tripTime("9:00") - now) / 86400000);
+    if(diff > 1)  return `${diff} days until Apple Hill 🍂 everything you tap here saves.`;
+    if(diff >= 0) return "Apple Hill is tomorrow 🍎 tap around all you want — your progress saves.";
+    return "Hope it was a good one 💕";
+  }
+  const next = STOPS.find(s => !state.done[s.id]);
+  const start = tripTime(next.start), end = tripTime(next.end);
+  if(now < start){
+    const mins = Math.round((start - now) / 60000);
+    if(mins > 90) return `Still on the road ☕ ${next.name} opens the day at ${fmt(next.start)}.`;
+    return `Right on track — <b>${next.name}</b> next, around ${fmt(next.start)} 💕`;
+  }
+  if(now <= end) return `You're at <b>${next.name}</b> right now ✨ take your time.`;
+  const late = round5((now - end) / 60000);
+  if(late <= 15) return `A few minutes behind on ${next.name} — totally fine, keep going 💕`;
+  if(late <= 45) return `Running ~${late} min behind — no rush, just enjoy it 🍂`;
+  return `Running ~${late} min behind. Pick a favorite and skip one — the day's still great 💛`;
+}
+
+refreshHeader();
+setInterval(refreshHeader, 20000);
+window.addEventListener("resize", refreshHeader);
+document.addEventListener("visibilitychange", () => { if(!document.hidden) refreshHeader(); });
+
+/* ============================================================
+   11. STOP REMINDERS (in-page notifications)
+   Fires while the page is open. iPhones can't buzz from a
+   closed browser tab — that's what Toby's own pings are for.
+   ============================================================ */
+let remindTimers = [];
+function scheduleReminders(){
+  remindTimers.forEach(clearTimeout); remindTimers = [];
+  if(!("Notification" in window) || Notification.permission !== "granted") return;
+  if(!isTripDay(new Date())) return;   // only arm on the actual trip day
+  const now = new Date();
+  const events = [
+    {t:"9:00", msg:"🚗 Time to roll! Leave Davis for Apple Hill — about 1h15 up to Camino."},
+    ...STOPS.map(s => ({t:s.start, msg:`${s.badge} ${s.name} — you're up! Tap Navigate 📍`})),
+    {t:"16:30", msg:"🍂 Time to head home — beat that Sacramento traffic!"}
+  ];
+  events.forEach(ev => {
+    const delay = tripTime(ev.t) - now;
+    if(delay > 0 && delay < 14 * 3600 * 1000){
+      remindTimers.push(setTimeout(() => {
+        try{ new Notification("Apple Hill Day Trip 💕", {body: ev.msg}); }catch(e){}
+      }, delay));
+    }
+  });
+}
+document.getElementById("remindBtn").addEventListener("click", async () => {
+  const btn = document.getElementById("remindBtn");
+  if(!("Notification" in window)){ btn.textContent = "🔕 Not supported in this browser"; return; }
+  try{
+    const perm = await Notification.requestPermission();
+    if(perm === "granted"){
+      state.reminders = true; saveState();
+      btn.classList.add("on"); btn.textContent = "🔔 Reminders on for Oct 14";
+      scheduleReminders();
+    } else {
+      btn.textContent = "🔕 Notifications blocked";
+    }
+  }catch(e){ btn.textContent = "🔕 Couldn't enable reminders"; }
+});
+if(state.reminders){
+  const b = document.getElementById("remindBtn");
+  if(b){ b.classList.add("on"); b.textContent = "🔔 Reminders on for Oct 14"; }
+  scheduleReminders();
+}
+
+/* ============================================================
+   12. LIVE CAMINO WEATHER (Open-Meteo, no key needed)
+   ============================================================ */
+function wxIcon(code){
+  if(code === 0) return "☀️";
+  if(code <= 3) return "⛅";
+  if(code <= 48) return "🌫️";
+  if(code <= 57) return "🌦️";
+  if(code <= 67) return "🌧️";
+  if(code <= 77) return "🌨️";
+  if(code <= 82) return "🌧️";
+  return "⛈️";
+}
+async function loadWeather(){
+  const pill = document.getElementById("wxPill");
+  try{
+    const url = "https://api.open-meteo.com/v1/forecast?latitude=38.744&longitude=-120.679"
+      + "&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,weathercode"
+      + "&timezone=America%2FLos_Angeles&temperature_unit=fahrenheit&forecast_days=4";
+    const r = await fetch(url);
+    if(!r.ok) throw 0;
+    const j = await r.json();
+    const now = new Date();
+    const di = Math.max(0, j.daily.time.indexOf("2026-10-14"));
+    const hi = Math.round(j.daily.temperature_2m_max[di]);
+    const lo = Math.round(j.daily.temperature_2m_min[di]);
+    const pp = j.daily.precipitation_probability_max[di];
+    if(isTripDay(now)){
+      const cur = Math.round(j.current.temperature_2m);
+      pill.textContent = `${wxIcon(j.current.weather_code)} ${cur}° now · ${hi}°/${lo}°` + (pp >= 30 ? ` · 🌧 ${pp}%` : "");
+    } else {
+      pill.textContent = `Wed ${wxIcon(j.daily.weathercode[di])} ${hi}°/${lo}°` + (pp >= 30 ? ` · 🌧 ${pp}%` : "");
+    }
+    pill.style.display = "";
+  }catch(e){ pill.style.display = "none"; }
+}
+
+/* ============================================================
+   13. "WHERE ARE WE?" — nearest-stop highlight + you-are-here pin
+   ============================================================ */
+function haversine(a, b, c, d){
+  const R = 3959, t = Math.PI / 180;
+  const h = Math.sin((c - a) * t / 2) ** 2 + Math.cos(a * t) * Math.cos(c * t) * Math.sin((d - b) * t / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+let youMarker = null;
+document.getElementById("whereBtn").addEventListener("click", () => {
+  const btn = document.getElementById("whereBtn");
+  if(!("geolocation" in navigator)){ btn.textContent = "📍 Location unavailable"; return; }
+  btn.textContent = "📍 Locating…";
+  navigator.geolocation.getCurrentPosition(pos => {
+    const lat = pos.coords.latitude, lng = pos.coords.longitude;
+    let best = 0, bestD = 1e9;
+    STOPS.forEach((s, i) => {
+      const d = haversine(lat, lng, s.lat, s.lng);
+      if(d < bestD){ bestD = d; best = i; }
+    });
+    document.querySelectorAll(".stop.here").forEach(c => {
+      c.classList.remove("here");
+      const b = c.querySelector(".here-badge"); if(b) b.remove();
+    });
+    const card = document.getElementById("stop-" + STOPS[best].id);
+    card.classList.add("here");
+    card.insertAdjacentHTML("afterbegin",
+      `<div class="here-badge">📍 YOU'RE HERE${bestD < 0.4 ? " — enjoy! 💕" : " · closest stop"}</div>`);
+    card.scrollIntoView({behavior:"smooth", block:"center"});
+    btn.textContent = `📍 Near ${STOPS[best].name}`;
+    if(map && window.L){
+      if(youMarker) map.removeLayer(youMarker);
+      youMarker = L.marker([lat, lng], {
+        icon: L.divIcon({className:"", html:'<div class="you-dot"></div>', iconSize:[20,20], iconAnchor:[10,10]})
+      }).addTo(map).bindPopup("📍 You are here 💕");
+      try{ map.flyTo([lat, lng], Math.max(map.getZoom(), 13), {duration:1.2}); }catch(e){}
+    }
+  }, () => { btn.textContent = "📍 Couldn't get location"; },
+  {enableHighAccuracy:true, timeout:10000});
+});
+
+/* boot: the map + trail need real layout — init once things settle */
+window.addEventListener("load", () => {
+  initMap();
+  setTimeout(refitMap, 350);
+  setTimeout(drawTrail, 400);
+  loadWeather();
+});
+if(document.fonts && document.fonts.ready) document.fonts.ready.then(() => { setTimeout(drawTrail, 250); refitMap(); });
+let rszT;
+window.addEventListener("resize", () => { clearTimeout(rszT); rszT = setTimeout(() => { drawTrail(); refitMap(); }, 250); });
+</script>
+
+</body>
+</html>
